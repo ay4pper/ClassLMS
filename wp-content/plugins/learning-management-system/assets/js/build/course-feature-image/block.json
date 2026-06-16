@@ -1,0 +1,50 @@
+{
+	"$schema": "https://schemas.wp.org/block.json",
+	"apiVersion": 3,
+	"name": "masteriyo/course-feature-image",
+	"version": "1.0.0",
+	"title": "Course Featured Image",
+	"category": "masteriyo-single-course",
+	"description": "",
+	"keywords": [
+		"Featured Image"
+	],
+	"example": {
+		"attributes": {}
+	},
+	"textdomain": "masteriyo",
+	"attributes": {
+		"clientId": {
+			"type": "string",
+			"default": ""
+		},
+		"blockCSS": {
+			"type": "string"
+		},
+		"courseId": {
+			"type": "number"
+		},
+		"height_n_width": {
+			"type": "object"
+		},
+		"selectedCourseId": {
+			"type": "number"
+		}
+	},
+	"usesContext": [
+		"masteriyo/course_id"
+	],
+	"style": "masteriyo-public",
+	"editorScript": "masteriyo-blocks",
+	"editorStyle": "masteriyo-public",
+	"supports": {
+		"align": false,
+		"html": false,
+		"color": {
+			"background": false,
+			"gradient": false,
+			"text": false
+		},
+		"customClassName": false
+	}
+}

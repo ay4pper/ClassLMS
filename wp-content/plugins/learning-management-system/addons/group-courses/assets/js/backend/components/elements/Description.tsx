@@ -1,0 +1,30 @@
+import { FormControl, FormLabel } from '@chakra-ui/react';
+import { __ } from '@wordpress/i18n';
+import React from 'react';
+import { accountPageFormLabelStyles } from '../../../../../../../assets/js/account/utils/general';
+import Editor from '../../../../../../../assets/js/back-end/components/common/Editor';
+
+interface Props {
+	defaultValue?: string;
+}
+
+const Description: React.FC<Props> = (props) => {
+	const { defaultValue } = props;
+
+	return (
+		<FormControl>
+			<FormLabel sx={accountPageFormLabelStyles}>
+				{__('Group Description', 'learning-management-system')}
+			</FormLabel>
+			<Editor
+				id="mto-group-description"
+				name="description"
+				defaultValue={defaultValue}
+				height={150}
+				showBasicToolbar={true}
+			/>
+		</FormControl>
+	);
+};
+
+export default Description;

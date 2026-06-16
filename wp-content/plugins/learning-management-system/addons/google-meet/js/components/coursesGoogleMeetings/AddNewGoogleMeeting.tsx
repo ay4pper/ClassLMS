@@ -1,0 +1,201 @@
+import {
+	Box,
+	Button,
+	ButtonGroup,
+	Container,
+	Stack,
+	useToast,
+} from '@chakra-ui/react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { __, _x, sprintf } from '@wordpress/i18n';
+import React from 'react';
+import { FormProvider, useForm } from 'react-hook-form';
+import { useNavigate, useParams } from 'react-router-dom';
+import BackToBuilder from '../../../../../assets/js/back-end/components/common/BackToBuilder';
+import BuilderHeader from '../../../../../assets/js/back-end/components/common/BuilderHeader';
+import routes from '../../../../../assets/js/back-end/constants/routes';
+import urls from '../../../../../assets/js/back-end/constants/urls';
+import { useWarnUnsavedChanges } from '../../../../../assets/js/back-end/hooks/useWarnUnSavedChanges';
+import { UsersApiResponse } from '../../../../../assets/js/back-end/types/users';
+import API from '../../../../../assets/js/back-end/utils/api';
+import {
+	addContentToBuilderCache,
+	deepMerge,
+} from '../../../../../assets/js/back-end/utils/utils';
+import GoogleMeetUrls from '../../../constants/urls';
+import { GoogleMeetSchema } from '../../schemas';
+import AddAttendees from '../AddAttendees';
+import Description from '../Description';
+import EndTime from '../EndTime';
+import GoogleMeetActionButton from '../GoogleMeetActionButton';
+import StartTime from '../StartTime';
+import Title from '../Title';
+
+interface Props {}
+
+const AddNewGoogleMeeting: React.FC<Props> = () => {
+	const methods = useForm<GoogleMeetSchema>();
+	const queryClient = useQueryClient();
+	const toast = useToast();
+	const { sectionId, courseId }: any = useParams();
+	const googleMeetAPI = new API(GoogleMeetUrls.googleMeets);
+	const navigate = useNavigate();
+	const usersAPI = new API(urls.users);
+
+	const usersQuery = useQuery<UsersApiResponse>({
+		queryKey: ['users'],
+		queryFn: () =>
+			usersAPI.list({
+				orderby: 'display_name',
+				order: 'asc',
+				per_page: 10,
+			}),
+	});
+
+	const addGoogleMeetMutation = useMutation({
+		mutationFn: (data: GoogleMeetSchema) => googleMeetAPI.store(data),
+		mutationKey: ['addGoogleMeet'],
+		...{
+			onSuccess: (data: GoogleMeetSchema) => {
+				methods.reset(methods.getValues());
+				addContentToBuilderCache(
+					queryClient,
+					[`builder${courseId}`, courseId],
+					data,
+					'google-meet',
+				);
+				toast({
+					title: sprintf(
+						/* translators: %s: item summary or name */
+						_x(
+							'%s has been added.',
+							'Item added notification message',
+							'learning-management-system',
+						),
+						data.summary,
+					),
+					status: 'success',
+					isClosable: true,
+				});
+				queryClient.invalidateQueries({ queryKey: [`course${courseId}`] });
+				navigate({
+					pathname: routes.courses.edit.replace(':courseId', courseId),
+					search: '?page=builder&view=' + sectionId,
+				});
+			},
+			onError: (error: any) => {
+				const message: any = error?.message
+					? error?.message
+					: error?.data?.message;
+
+				toast({
+					title: __(
+						'Could not create google meeting.',
+						'learning-management-system',
+					),
+					// description: message ? `${message}` : undefined,
+					status: 'error',
+					isClosable: true,
+				});
+			},
+		},
+	});
+
+	const onSubmit = (data: any) => {
+		const all_users = usersQuery?.data?.data?.map((user: any) => user?.id);
+
+		const newData = {
+			course_id: courseId,
+			section_id: sectionId,
+			// time_zone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+			time_zone: 'UTC',
+			starts_at: new Date(data.starts_at).toISOString(),
+			ends_at: new Date(data.ends_at).toISOString(),
+			attendees: all_users,
+		};
+
+		addGoogleMeetMutation.mutate(deepMerge(data, newData));
+	};
+
+	useWarnUnsavedChanges(methods.formState.isDirty);
+
+	return (
+		<FormProvider {...methods}>
+			<Stack direction="column" spacing="8" alignItems="center">
+				<BuilderHeader
+					onSaveAction={(status) =>
+						methods.handleSubmit((data) => onSubmit({ ...data, status }))
+					}
+					isLoading={addGoogleMeetMutation?.isPending}
+					disableMainButtons
+				/>
+				<Container maxW="container.xl">
+					<Stack direction="column" spacing="6">
+						<BackToBuilder />
+
+						<form
+							onSubmit={methods.handleSubmit((data: GoogleMeetSchema) =>
+								onSubmit(data),
+							)}
+						>
+							<Stack
+								direction={['column', 'column', 'column', 'row']}
+								spacing="8"
+							>
+								<Box
+									flex="1"
+									bg="white"
+									p="10"
+									shadow="box"
+									display="flex"
+									flexDirection="column"
+									justifyContent="space-between"
+								>
+									<Stack direction="column" spacing="6">
+										<Title />
+										<Description />
+
+										<ButtonGroup>
+											<GoogleMeetActionButton
+												methods={methods}
+												onSubmit={onSubmit}
+												isLoading={addGoogleMeetMutation.isPending}
+												type="add"
+											/>
+											<Button
+												variant="outline"
+												onClick={() =>
+													navigate({
+														pathname: routes.courses.edit.replace(
+															':courseId',
+															courseId,
+														),
+														search: '?page=builder',
+													})
+												}
+											>
+												{__('Cancel', 'learning-management-system')}
+											</Button>
+										</ButtonGroup>
+									</Stack>
+								</Box>
+
+								<Box w={{ lg: '400px' }} bg="white" p="10" shadow="box">
+									<Stack direction="column" spacing="6">
+										<StartTime />
+
+										<EndTime />
+
+										<AddAttendees defaultValue={true} />
+									</Stack>
+								</Box>
+							</Stack>
+						</form>
+					</Stack>
+				</Container>
+			</Stack>
+		</FormProvider>
+	);
+};
+
+export default AddNewGoogleMeeting;

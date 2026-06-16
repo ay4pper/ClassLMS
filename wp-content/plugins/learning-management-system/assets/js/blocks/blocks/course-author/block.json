@@ -1,0 +1,75 @@
+{
+  "$schema": "https://schemas.wp.org/block.json",
+  "apiVersion": 3,
+  "name": "masteriyo/course-author",
+  "version": "1.0.0",
+  "title": "Course Author",
+  "category": "masteriyo-single-course",
+  "description": "",
+  "keywords": [
+    "Courses Author Block"
+  ],
+  "textdomain": "masteriyo",
+  "example": {
+    "attributes": {}
+  },
+  "attributes": {
+    "clientId": {
+      "type": "string",
+      "default": ""
+    },
+    "blockCSS": {
+      "type": "string"
+    },
+    "authors": {
+      "type": "array",
+      "default": []
+    },
+    "enableAuthorsAvatar": {
+      "type": "boolean",
+      "default": true
+    },
+    "enableAuthorsName": {
+      "type": "boolean",
+      "default": true
+    },
+    "height_n_width": {
+      "type": "object"
+    },
+    "margin": {
+      "type": "string"
+    },
+    "courseId": {
+      "type": "number"
+    },
+    "selectedCourseId": {
+      "type": "number"
+    },
+    "fontSize": {
+      "type": "object",
+      "default": {
+        "value": "14",
+        "unit": "px"
+      }
+    },
+    "textColor": {
+      "type": "string",
+      "default": ""
+    }
+  },
+  "usesContext": [
+    "masteriyo/course_id"
+  ],
+  "style": "masteriyo-public",
+  "editorScript": "masteriyo-blocks",
+  "editorStyle": "masteriyo-public",
+  "supports": {
+    "align": false,
+    "html": false,
+    "color": {
+      "background": false,
+      "gradient": false,
+      "text": false
+    }
+  }
+}
